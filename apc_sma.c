@@ -288,7 +288,7 @@ static APC_HOTSPOT size_t sma_deallocate(void* shmaddr, size_t offset)
 /* }}} */
 
 /* {{{ APC SMA API */
-PHP_APCU_API void apc_sma_init(apc_sma_t* sma, void** data, apc_sma_expunge_f expunge, int32_t num, size_t size, char *mask) {
+PHP_APCU_API void apc_sma_init(apc_sma_t* sma, void** data, apc_sma_expunge_f expunge, int32_t num, size_t size, char *mask, zend_bool is_shared) {
 	int32_t i;
 
 	if (sma->initialized) {
@@ -325,7 +325,7 @@ PHP_APCU_API void apc_sma_init(apc_sma_t* sma, void** data, apc_sma_expunge_f ex
 		void*       shmaddr;
 
 #if APC_MMAP
-		sma->segs[i] = apc_mmap(mask, sma->size);
+		sma->segs[i] = apc_mmap(mask, sma->size, is_shared);
 		if(sma->num != 1)
 			memcpy(&mask[strlen(mask)-6], "XXXXXX", 6);
 #else

@@ -51,7 +51,7 @@
 # define MAP_ANON MAP_ANONYMOUS
 #endif
 
-apc_segment_t apc_mmap(char *file_mask, size_t size)
+apc_segment_t apc_mmap(char *file_mask, size_t size, zend_bool is_shared)
 {
 	apc_segment_t segment;
 
@@ -68,11 +68,17 @@ apc_segment_t apc_mmap(char *file_mask, size_t size)
 #else
 		fd = -1;
 		flags = MAP_SHARED | MAP_ANON;
+		if(is_shared) {
+			zend_error_noreturn(E_CORE_ERROR, "A file mask has to be provided for shared mode.  Please see the apc.mmap_file_mask INI option.");
+		}
 #ifdef APC_MEMPROTECT
 		remap = 0;
 #endif
 #endif
 	} else if(!strcmp(file_mask,"/dev/zero")) {
+		if(is_shared) {
+			zend_error_noreturn(E_CORE_ERROR, "A valid file mask other than /dev/zero has to be provided for shared mode.  Please see the apc.mmap_file_mask INI option.");
+		}
 		fd = open("/dev/zero", O_RDWR, S_IRUSR | S_IWUSR);
 		if(fd == -1) {
 			zend_error_noreturn(E_CORE_ERROR, "apc_mmap: open on /dev/zero failed");

@@ -53,6 +53,7 @@ ZEND_BEGIN_MODULE_GLOBALS(apcu)
 	/* module variables */
 	zend_bool initialized;       /* true if module was initialized */
 	zend_bool enable_cli;        /* Flag to override turning APC off for CLI */
+	zend_bool enable_shared;     /* Flag to share memory between all instances */
 	zend_bool slam_defense;      /* true for user cache slam defense */
 
 	char *preload_path;          /* preload path */
