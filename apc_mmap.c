@@ -31,6 +31,7 @@
 
 #if APC_MMAP
 
+#include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -86,6 +87,22 @@ apc_segment_t apc_mmap(char *file_mask, size_t size, zend_bool is_shared)
 #ifdef APC_MEMPROTECT
 		remap = 0; /* cannot remap */
 #endif
+	} else if(is_shared) {
+		char mapfile[PATH_MAX];
+		struct stat statbuf;
+		
+		sprintf(mapfile, "%s_%d", file_mask, 1); 
+		fd = open(mapfile, O_RDWR|O_CREAT);
+		if(fd == -1) {
+			zend_error_noreturn(E_CORE_ERROR, "apc_mmap: open '%s' failed: %s", mapfile, strerror(errno));
+		}
+		if(stat(mapfile,&statbuf) == -1) {
+			zend_error_noreturn(E_CORE_ERROR, "apc_mmap: couldnot stat mapfile %s: %s", mapfile, strerror(errno));
+		}
+		if(statbuf.st_size < size) {
+			lseek(fd, size, SEEK_SET);
+			write(fd, '\0', 1);
+		}
 	} else {
 		/*
 		 * Otherwise we do a normal filesystem mmap
